@@ -5,7 +5,7 @@ export const MobileDatePickerContainer = styled.div`
   max-width: 320px;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   font-family: sans-serif;
   user-select: none;
@@ -24,27 +24,6 @@ export const MobileDatePickerContainer = styled.div`
     padding: 16px 0;
     height: 150px;
     overflow: hidden;
-    position: relative;
-  }
-
-  .picker::before,
-  .picker::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #007aff;
-  }
-
-  .picker::before {
-    top: 50%;
-    transform: translateY(-20px);
-  }
-
-  .picker::after {
-    top: 50%;
-    transform: translateY(20px);
   }
 
   .column {
@@ -72,6 +51,8 @@ export const MobileDatePickerContainer = styled.div`
   .item.selected {
     color: #000;
     font-weight: bold;
+    border-top: 1px solid #007aff;
+    border-bottom: 1px solid #007aff;
   }
 
   .footer {

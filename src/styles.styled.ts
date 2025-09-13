@@ -43,6 +43,11 @@ export const MobileDatePickerContainer = styled.div`
     cursor: pointer;
   }
 
+  .item.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+
   .item.selected {
     color: #000;
     font-weight: bold;

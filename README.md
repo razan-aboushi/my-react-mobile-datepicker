@@ -3,24 +3,26 @@
 A simple and customizable **mobile date picker** for React projects with support for multiple languages (`en`, `ar`, `ku`).
 
 ![Mobile Date Picker](https://github.com/razan-aboushi/my-react-mobile-datepicker/blob/main/myDatePicker.png?raw=true)
----
-
-## Features
-* Mobile-friendly and scrollable date picker
-* Supports **English**, **Arabic** and **Kurdish** months
-* Easily customizable via props
-* Lightweight and minimal dependencies (React and styled-components)
-* Supports disabling specific dates, months, or years using `minDate` and `maxDate`
 
 ---
+## ✨ Features
+- 📱 **Mobile-friendly** and scrollable date picker
+- 🌍 Supports **English**, **Arabic**, and **Kurdish** months
+- 🎨 Easily customizable via props
+- ⚡ Lightweight (React + styled-components only)
+- 🚫 Supports disabling specific dates, months, or years with `minDate` and `maxDate`
+- 🧹 Optional **Clear button** to reset the selected date
 
-## Installation
+---
 
+## 📦 Installation
+
+Using **npm**:
 ```bash
 npm install my-react-mobile-datepicker
 ````
 
-or with yarn:
+Using **yarn**:
 
 ```bash
 yarn add my-react-mobile-datepicker
@@ -28,7 +30,7 @@ yarn add my-react-mobile-datepicker
 
 ---
 
-## Usage
+## 🚀 Usage
 
 ```tsx
 import React, { useState } from "react";
@@ -44,7 +46,7 @@ const App = () => {
         value={selectedDate}
         minYear={1970}
         maxYear={2030}
-        lang="en" // "ar" or "ku"
+        lang="en" // also supports "ar" or "ku"
         minDate={new Date(2000, 0, 1)}
         maxDate={new Date(2025, 11, 31)}
         onChange={(date) => setSelectedDate(date)}
@@ -52,6 +54,7 @@ const App = () => {
         appearTheDataInTheHeader={true}
         dashOrSlashBetweenTheDate="/"
         dateFormat="YYYY-MM-DD"
+        isAppearClearButton={true} // 👈 shows the Clear button
       />
     </div>
   );
@@ -62,11 +65,11 @@ export default App;
 
 ---
 
-## Props
+## ⚙️ Props
 
 | Prop                        | Type                                           | Default                    | Description                                                           |
 | --------------------------- | ---------------------------------------------- | -------------------------- | --------------------------------------------------------------------- |
-| `value`                     | `Date`                                         | `new Date()`               | Initial selected date                                                 |
+| `value`                     | `Date`                                         | `new Date()`               | Currently selected date                                               |
 | `minYear`                   | `number`                                       | `1970`                     | Minimum selectable year                                               |
 | `maxYear`                   | `number`                                       | `new Date().getFullYear()` | Maximum selectable year                                               |
 | `minDate`                   | `Date`                                         | `undefined`                | Minimum selectable date (disables earlier dates, months, and years)   |
@@ -78,19 +81,20 @@ export default App;
 | `onClose`                   | `() => void`                                   | `undefined`                | Callback fired when the picker closes                                 |
 | `className`                 | `string`                                       | `undefined`                | Add a custom CSS class for styling                                    |
 | `appearTheDataInTheHeader`  | `boolean`                                      | `true`                     | If `true`, displays the formatted date in the header above the picker |
+| `isAppearClearButton`       | `boolean`                                      | `true`                     | If `true`, shows the **Clear** button to reset the selected date      |
 
 ---
 
-## Methods
+## 🛠 Methods
 
-* **Clear selected date**: Click the **Clear** button inside the picker
-* **Save selected date**: Click the **Save** button to trigger `onChange`
+* **Clear selected date** → Click the **Clear** button inside the picker
+* **Save selected date** → Click the **Save** button (triggers `onChange`)
 
 ---
 
-## Languages
+## 🌍 Languages
 
-Supported months for the `lang` prop:
+Supported month names for the `lang` prop:
 
 * **English:** January → December
 * **Arabic:** يناير → ديسمبر
@@ -98,7 +102,7 @@ Supported months for the `lang` prop:
 
 ---
 
-## Styling
+## 🎨 Styling
 
 You can customize the picker using `className` or by overriding the styled-components styles.
 
@@ -117,6 +121,6 @@ Example:
 
 ---
 
-## License
+## 📜 License
 
 MIT © [Razan Aboushi](https://github.com/razan-aboushi)

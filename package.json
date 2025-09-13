@@ -1,7 +1,7 @@
 {
   "name": "my-react-mobile-datepicker",
   "type": "module",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A lightweight and customizable mobile-style date picker for React.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",

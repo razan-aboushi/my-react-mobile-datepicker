@@ -25,7 +25,7 @@ const MobileDatePickerContainer = styled.div `
   max-width: 320px;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   font-family: sans-serif;
   user-select: none;
@@ -44,6 +44,27 @@ const MobileDatePickerContainer = styled.div `
     padding: 16px 0;
     height: 150px;
     overflow: hidden;
+    position: relative;
+  }
+
+  .picker::before,
+  .picker::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #007aff;
+  }
+
+  .picker::before {
+    top: 50%;
+    transform: translateY(-20px);
+  }
+
+  .picker::after {
+    top: 50%;
+    transform: translateY(20px);
   }
 
   .column {
@@ -63,11 +84,14 @@ const MobileDatePickerContainer = styled.div `
     cursor: pointer;
   }
 
+  .item.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+
   .item.selected {
     color: #000;
     font-weight: bold;
-    border-top: 1px solid #007aff;
-    border-bottom: 1px solid #007aff;
   }
 
   .footer {
@@ -93,31 +117,75 @@ const MobileDatePickerContainer = styled.div `
   }
 `;
 
-const MobileDatePicker = ({ value, minYear = 1970, maxYear = new Date().getFullYear(), lang = "en", onChange, onClose, className, }) => {
-    // If value is null or undefined, fallback to today
+const MobileDatePicker = ({ value, minYear = 1970, maxYear = new Date().getFullYear(), lang = "en", onChange, onClose, className, isAppearTheDataInTheHeader = true, isAppearClearButton = true, dashOrSlashBetweenTheDate = "/", dateFormat = "YYYY-MM-DD", minDate, maxDate, }) => {
     const initialDate = value || new Date();
     const [year, setYear] = useState(initialDate.getFullYear());
     const [month, setMonth] = useState(initialDate.getMonth());
     const [day, setDay] = useState(initialDate.getDate());
     const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i);
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const dayList = Array.from({ length: daysInMonth }, (_, r) => r + 1);
     const months = getMonths(lang);
+    const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+    const dayList = Array.from({ length: daysInMonth(year, month) }, (_, r) => r + 1);
+    const isDateAllowed = (y, m, d) => {
+        const candidate = new Date(y, m, d);
+        if (minDate && candidate < minDate)
+            return false;
+        if (maxDate && candidate > maxDate)
+            return false;
+        return true;
+    };
+    // Check if any day exists in a month
+    const isMonthAllowed = (y, m) => {
+        const days = daysInMonth(y, m);
+        for (let d = 1; d <= days; d++) {
+            if (isDateAllowed(y, m, d))
+                return true;
+        }
+        return false;
+    };
+    // Check if any month exists in a year
+    const isYearAllowed = (y) => {
+        for (let m = 0; m < 12; m++) {
+            if (isMonthAllowed(y, m))
+                return true;
+        }
+        return false;
+    };
+    const formatDate = () => {
+        switch (dateFormat) {
+            case "DD/MM/YYYY":
+                return `${day}${dashOrSlashBetweenTheDate}${month + 1}${dashOrSlashBetweenTheDate}${year}`;
+            case "MM-DD-YYYY":
+                return `${month + 1}${dashOrSlashBetweenTheDate}${day}${dashOrSlashBetweenTheDate}${year}`;
+            default:
+                return `${year}${dashOrSlashBetweenTheDate}${month + 1}${dashOrSlashBetweenTheDate}${day}`;
+        }
+    };
     const handleSave = () => {
         const d = new Date(year, month, day);
-        onChange?.(d);
-        onClose?.();
+        if (isDateAllowed(year, month, day)) {
+            onChange?.(d);
+            onClose?.();
+        }
     };
     const handleClear = () => {
         onChange?.(null);
         onClose?.();
-        // Reset to today after clearing
         const today = new Date();
         setYear(today.getFullYear());
         setMonth(today.getMonth());
         setDay(today.getDate());
     };
-    return (jsxs(MobileDatePickerContainer, { className: className, children: [jsxs("div", { className: "header", children: [year, "/", month + 1, "/", day] }), jsxs("div", { className: "picker", children: [jsx("div", { className: "column", children: years.map((y) => (jsx("div", { className: `item ${y === year ? "selected" : ""}`, onClick: () => setYear(y), children: y }, y))) }), jsx("div", { className: "column", children: months.map((m, idx) => (jsx("div", { className: `item ${idx === month ? "selected" : ""}`, onClick: () => setMonth(idx), children: m }, m))) }), jsx("div", { className: "column", children: dayList.map((d) => (jsx("div", { className: `item ${d === day ? "selected" : ""}`, onClick: () => setDay(d), children: d }, d))) })] }), jsxs("div", { className: "footer", children: [jsx("div", { className: "btn clearBtn", onClick: handleClear, children: lang === "en" ? "Clear" : lang === "ku" ? "پاک کردن" : "حذف" }), jsx("div", { className: "btn saveBtn", onClick: handleSave, children: lang === "en" ? "Save" : lang === "ku" ? "ذخیره" : "حفظ" })] })] }));
+    return (jsxs(MobileDatePickerContainer, { className: className, children: [isAppearTheDataInTheHeader && (jsx("div", { className: "header", children: formatDate() })), jsxs("div", { className: "picker", children: [jsx("div", { className: "column", children: years.map((y) => {
+                            const allowed = isYearAllowed(y);
+                            return (jsx("div", { className: `item ${y === year ? "selected" : ""} ${!allowed ? "disabled" : ""}`, onClick: () => allowed && setYear(y), children: y }, y));
+                        }) }), jsx("div", { className: "column", children: months.map((m, idx) => {
+                            const allowed = isMonthAllowed(year, idx);
+                            return (jsx("div", { className: `item ${idx === month ? "selected" : ""} ${!allowed ? "disabled" : ""}`, onClick: () => allowed && setMonth(idx), children: m }, m));
+                        }) }), jsx("div", { className: "column", children: dayList.map((d) => {
+                            const allowed = isDateAllowed(year, month, d);
+                            return (jsx("div", { className: `item ${d === day ? "selected" : ""} ${!allowed ? "disabled" : ""}`, onClick: () => allowed && setDay(d), children: d }, d));
+                        }) })] }), jsxs("div", { className: "footer", children: [isAppearClearButton && (jsx("div", { className: "btn clearBtn", onClick: handleClear, children: lang === "en" ? "Clear" : lang === "ku" ? "پاک کردن" : "حذف" })), jsx("div", { className: "btn saveBtn", onClick: handleSave, children: lang === "en" ? "Save" : lang === "ku" ? "ذخیره" : "حفظ" })] })] }));
 };
 
 export { MobileDatePicker, getMonths };

@@ -2,13 +2,15 @@
 
 A simple and customizable **mobile date picker** for React projects with support for multiple languages (`en`, `ar`, `ku`).
 
+![Mobile Date Picker](https://github.com/razan-aboushi/my-react-mobile-datepicker/blob/main/myDatePicker.png?raw=true)
 ---
 
 ## Features
 * Mobile-friendly and scrollable date picker
-* Supports **English**, **Arabic**, and **Kurdish** months
+* Supports **English**, **Arabic** and **Kurdish** months
 * Easily customizable via props
-* Lightweight and less number of dependencies (as React and styled-components)
+* Lightweight and minimal dependencies (React and styled-components)
+* Supports disabling specific dates, months, or years using `minDate` and `maxDate`
 
 ---
 
@@ -16,7 +18,7 @@ A simple and customizable **mobile date picker** for React projects with support
 
 ```bash
 npm install my-react-mobile-datepicker
-```
+````
 
 or with yarn:
 
@@ -41,10 +43,15 @@ const App = () => {
       <MobileDatePicker
         value={selectedDate}
         minYear={1970}
-        maxYear={2030 || new Date().getFullYear()}
+        maxYear={2030}
         lang="en" // "ar" or "ku"
+        minDate={new Date(2000, 0, 1)}
+        maxDate={new Date(2025, 11, 31)}
         onChange={(date) => setSelectedDate(date)}
         onClose={() => console.log("Picker closed")}
+        appearTheDataInTheHeader={true}
+        dashOrSlashBetweenTheDate="/"
+        dateFormat="YYYY-MM-DD"
       />
     </div>
   );
@@ -57,15 +64,20 @@ export default App;
 
 ## Props
 
-| Prop        | Type                           | Default                    | Description                       |
-| ----------- | ------------------------------ | -------------------------- | --------------------------------- |
-| `value`     | `Date`                         | `new Date()`               | Initial selected date             |
-| `minYear`   | `number`                       | `1970`                     | Minimum selectable year           |
-| `maxYear`   | `number`                       | `new Date().getFullYear()` | Maximum selectable year           |
-| `lang`      | `"en" \| "ar" \| "ku"`         | `"en"`                     | Language for months               |
-| `onChange`  | `(date: Date \| null) => void` | `undefined`                | Callback fired on date selection  |
-| `onClose`   | `() => void`                   | `undefined`                | Callback fired when picker closes |
-| `className` | `string`                       | `undefined`                | Add custom CSS class for styling  |
+| Prop                        | Type                                           | Default                    | Description                                                           |
+| --------------------------- | ---------------------------------------------- | -------------------------- | --------------------------------------------------------------------- |
+| `value`                     | `Date`                                         | `new Date()`               | Initial selected date                                                 |
+| `minYear`                   | `number`                                       | `1970`                     | Minimum selectable year                                               |
+| `maxYear`                   | `number`                                       | `new Date().getFullYear()` | Maximum selectable year                                               |
+| `minDate`                   | `Date`                                         | `undefined`                | Minimum selectable date (disables earlier dates, months, and years)   |
+| `maxDate`                   | `Date`                                         | `undefined`                | Maximum selectable date (disables later dates, months, and years)     |
+| `lang`                      | `"en" \| "ar" \| "ku"`                         | `"en"`                     | Language for month names                                              |
+| `dateFormat`                | `"YYYY-MM-DD" \| "DD/MM/YYYY" \| "MM-DD-YYYY"` | `"YYYY-MM-DD"`             | Format of the date displayed in the header                            |
+| `dashOrSlashBetweenTheDate` | `string`                                       | `"/"`                      | Character to use between date parts in the formatted date             |
+| `onChange`                  | `(date: Date \| null) => void`                 | `undefined`                | Callback fired when a date is selected                                |
+| `onClose`                   | `() => void`                                   | `undefined`                | Callback fired when the picker closes                                 |
+| `className`                 | `string`                                       | `undefined`                | Add a custom CSS class for styling                                    |
+| `appearTheDataInTheHeader`  | `boolean`                                      | `true`                     | If `true`, displays the formatted date in the header above the picker |
 
 ---
 
@@ -78,7 +90,7 @@ export default App;
 
 ## Languages
 
-Supported months for `lang` prop:
+Supported months for the `lang` prop:
 
 * **English:** January → December
 * **Arabic:** يناير → ديسمبر

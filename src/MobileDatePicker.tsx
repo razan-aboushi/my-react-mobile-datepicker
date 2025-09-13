@@ -10,11 +10,12 @@ type Props = {
   onChange?: (date: Date | null) => void;
   onClose?: () => void;
   className?: string;
-  appearTheDataInTheHeader?: boolean;
+  isAppearTheDataInTheHeader?: boolean;
   dashOrSlashBetweenTheDate?: string;
   dateFormat?: "YYYY-MM-DD" | "DD/MM/YYYY" | "MM-DD-YYYY";
   minDate?: Date;
   maxDate?: Date;
+  isAppearClearButton?: boolean;
 };
 
 const MobileDatePicker: FC<Props> = ({
@@ -25,7 +26,8 @@ const MobileDatePicker: FC<Props> = ({
   onChange,
   onClose,
   className,
-  appearTheDataInTheHeader = true,
+  isAppearTheDataInTheHeader = true,
+  isAppearClearButton = true,
   dashOrSlashBetweenTheDate = "/",
   dateFormat = "YYYY-MM-DD",
   minDate,
@@ -102,7 +104,9 @@ const MobileDatePicker: FC<Props> = ({
 
   return (
     <MobileDatePickerContainer className={className}>
-      {appearTheDataInTheHeader && <div className="header">{formatDate()}</div>}
+      {isAppearTheDataInTheHeader && (
+        <div className="header">{formatDate()}</div>
+      )}
 
       <div className="picker">
         {/* Year */}
@@ -155,9 +159,11 @@ const MobileDatePicker: FC<Props> = ({
       </div>
 
       <div className="footer">
-        <div className="btn clearBtn" onClick={handleClear}>
-          {lang === "en" ? "Clear" : lang === "ku" ? "پاک کردن" : "حذف"}
-        </div>
+        {isAppearClearButton && (
+          <div className="btn clearBtn" onClick={handleClear}>
+            {lang === "en" ? "Clear" : lang === "ku" ? "پاک کردن" : "حذف"}
+          </div>
+        )}
         <div className="btn saveBtn" onClick={handleSave}>
           {lang === "en" ? "Save" : lang === "ku" ? "ذخیره" : "حفظ"}
         </div>

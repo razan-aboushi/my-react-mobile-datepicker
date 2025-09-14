@@ -3,6 +3,9 @@
 A simple and customizable **mobile date picker** for React projects with support for multiple languages (`en`, `ar`, `ku`).
 
 ![Mobile Date Picker](https://github.com/razan-aboushi/my-react-mobile-datepicker/blob/main/myDatePicker.png?raw=true)
+
+![Mobile Date Picker](https://github.com/razan-aboushi/my-react-mobile-datepicker/blob/main/datePickerImg.png?raw=true)
+
 ---
 
 ## Features

@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useRef, useState, useEffect } from "react";
 import { getMonths } from "./months";
 import { MobileDatePickerContainer } from "./styles.styled";
 
@@ -37,6 +37,23 @@ const MobileDatePicker: FC<Props> = ({
   const [year, setYear] = useState(initialDate.getFullYear());
   const [month, setMonth] = useState(initialDate.getMonth());
   const [day, setDay] = useState(initialDate.getDate());
+  const yearRef = useRef<HTMLDivElement | null>(null);
+  const monthRef = useRef<HTMLDivElement | null>(null);
+  const dayRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToSelected = (
+    ref: React.RefObject<HTMLDivElement | null>,
+    selectedIndex: number,
+  ) => {
+    if (!ref.current) return;
+    const itemHeight = 40;
+    const pickerHeight = 200;
+    const offset = pickerHeight / 2 - itemHeight / 2;
+    ref.current.scrollTo({
+      top: selectedIndex * itemHeight - offset,
+      behavior: "smooth",
+    });
+  };
 
   const years = Array.from(
     { length: maxYear - minYear + 1 },
@@ -102,15 +119,26 @@ const MobileDatePicker: FC<Props> = ({
     setDay(today.getDate());
   };
 
+  useEffect(() => {
+    scrollToSelected(yearRef, years.indexOf(year));
+  }, [year]);
+
+  useEffect(() => {
+    scrollToSelected(monthRef, month);
+  }, [month]);
+
+  useEffect(() => {
+    scrollToSelected(dayRef, day - 1);
+  }, [day]);
+
   return (
-    <MobileDatePickerContainer className={className}>
+    <MobileDatePickerContainer id="mobileDatePicker" className={className}>
       {isAppearTheDataInTheHeader && (
         <div className="header">{formatDate()}</div>
       )}
 
       <div className="picker">
-        {/* Year */}
-        <div className="column">
+        <div className="column" ref={yearRef}>
           {years.map((y) => {
             const allowed = isYearAllowed(y);
             return (
@@ -125,8 +153,7 @@ const MobileDatePicker: FC<Props> = ({
           })}
         </div>
 
-        {/* Month */}
-        <div className="column">
+        <div className="column" ref={monthRef}>
           {months.map((m, idx) => {
             const allowed = isMonthAllowed(year, idx);
             return (
@@ -141,8 +168,7 @@ const MobileDatePicker: FC<Props> = ({
           })}
         </div>
 
-        {/* Day */}
-        <div className="column">
+        <div className="column" ref={dayRef}>
           {dayList.map((d) => {
             const allowed = isDateAllowed(year, month, d);
             return (

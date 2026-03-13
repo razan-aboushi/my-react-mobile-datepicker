@@ -6,6 +6,7 @@ A high-performance, **infinite-scrolling** mobile date picker for React and Type
 
 ![Mobile Date Picker](https://github.com/razan-aboushi/my-react-mobile-datepicker/blob/main/datePickerImg.png?raw=true)
 
+The npm package is available at: https://www.npmjs.com/package/my-react-mobile-datepicker
 ---
 
 ## 🚀 Features

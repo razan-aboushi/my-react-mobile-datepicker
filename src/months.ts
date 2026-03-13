@@ -1,4 +1,4 @@
-type Lang = "en" | "ar" | "ku";
+export type Lang = "en" | "ar" | "ku";
 
 const monthsMap: Record<Lang, string[]> = {
     en: [

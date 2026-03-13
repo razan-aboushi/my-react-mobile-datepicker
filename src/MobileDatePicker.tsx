@@ -1,111 +1,110 @@
-import React, { FC, useRef, useState, useEffect } from "react";
-import { getMonths } from "./months";
+import React, { useRef, useState, useEffect, useMemo, useCallback } from "react";
+import {getMonths, Lang} from "./months";
 import { MobileDatePickerContainer } from "./styles.styled";
 
-type Props = {
-  value?: Date;
+export interface MobileDatePickerProps {
+  value?: Date | string | number | null;
   minYear?: number;
   maxYear?: number;
-  lang?: "en" | "ar" | "ku";
-  onChange?: (date: Date | null) => void;
+  lang?: Lang;
+  onChange?: (date: Date | null, formattedString?: string) => void;
   onClose?: () => void;
   className?: string;
   isAppearTheDataInTheHeader?: boolean;
-  dashOrSlashBetweenTheDate?: string;
-  dateFormat?: "YYYY-MM-DD" | "DD/MM/YYYY" | "MM-DD-YYYY";
-  minDate?: Date;
-  maxDate?: Date;
   isAppearClearButton?: boolean;
-};
+  dashOrSlashBetweenTheDate?: string;
+  dateFormat?: string;
+  minDate?: Date | string | number;
+  maxDate?: Date | string | number;
+}
 
-const MobileDatePicker: FC<Props> = ({
+export interface PickerItemProps {
+  label: string | number;
+  index: number;
+  isSelected: boolean;
+  isDisabled: boolean;
+  onSelect: React.Dispatch<React.SetStateAction<number>> | ((index: number) => void);
+}
+
+const MULTIPLIER = 40;
+
+const PickerItem = React.memo(({ label, index, isSelected, isDisabled, onSelect }: PickerItemProps) => (
+    <div
+      className={`item ${isSelected ? "selected" : ""} ${isDisabled ? "disabled" : ""}`}
+      onClick={() => !isDisabled && onSelect(index)}
+    >
+      {label}
+    </div>
+));
+
+PickerItem.displayName = "PickerItem";
+
+  const MobileDatePicker: React.FC<MobileDatePickerProps> = ({
   value,
   minYear = 1970,
-  maxYear = new Date().getFullYear(),
+  maxYear = new Date().getFullYear() + 10,
   lang = "en",
   onChange,
   onClose,
   className,
   isAppearTheDataInTheHeader = true,
   isAppearClearButton = true,
-  dashOrSlashBetweenTheDate = "/",
+  dashOrSlashBetweenTheDate = "-",
   dateFormat = "YYYY-MM-DD",
   minDate,
   maxDate,
 }) => {
-  const initialDate = value || new Date();
-  const [year, setYear] = useState(initialDate.getFullYear());
-  const [month, setMonth] = useState(initialDate.getMonth());
-  const [day, setDay] = useState(initialDate.getDate());
-  const yearRef = useRef<HTMLDivElement | null>(null);
-  const monthRef = useRef<HTMLDivElement | null>(null);
-  const dayRef = useRef<HTMLDivElement | null>(null);
+  const initialDate = useMemo(() => {
+    const d = value ? new Date(value) : new Date();
+    return isNaN(d.getTime()) ? new Date() : d;
+  }, [value]);
 
-  const scrollToSelected = (
-    ref: React.RefObject<HTMLDivElement | null>,
-    selectedIndex: number,
-  ) => {
-    if (!ref.current) return;
-    const itemHeight = 40;
-    const pickerHeight = 200;
-    const offset = pickerHeight / 2 - itemHeight / 2;
-    ref.current.scrollTo({
-      top: selectedIndex * itemHeight - offset,
-      behavior: "smooth",
-    });
-  };
+  const [year, setYear] = useState<number>(initialDate.getFullYear());
+  const [monthIndex, setMonthIndex] = useState<number>(12 * (MULTIPLIER / 2) + initialDate.getMonth());
 
-  const years = Array.from(
-    { length: maxYear - minYear + 1 },
-    (_, i) => minYear + i,
-  );
-  const months = getMonths(lang);
+  const initialMaxDays = useMemo(() => new Date(initialDate.getFullYear(), initialDate.getMonth() + 1, 0).getDate(), [initialDate]);
+  const [dayIndex, setDayIndex] = useState<number>(initialMaxDays * (MULTIPLIER / 2) + initialDate.getDate() - 1);
 
-  const daysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
-  const dayList = Array.from(
-    { length: daysInMonth(year, month) },
-    (_, r) => r + 1,
-  );
+  const yearRef = useRef<HTMLDivElement>(null);
+  const monthRef = useRef<HTMLDivElement>(null);
+  const dayRef = useRef<HTMLDivElement>(null);
 
-  const isDateAllowed = (y: number, m: number, d: number) => {
-    const candidate = new Date(y, m, d);
-    if (minDate && candidate < minDate) return false;
-    if (maxDate && candidate > maxDate) return false;
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevProps = useRef({ year: initialDate.getFullYear(), month: initialDate.getMonth(), day: initialDate.getDate() });
+
+  const realMonth = monthIndex % 12;
+  const maxDays = new Date(year, realMonth + 1, 0).getDate();
+  const realDay = (dayIndex % maxDays) + 1;
+
+  const years = useMemo(() => Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i), [minYear, maxYear]);
+  const baseMonths = useMemo(() => getMonths(lang), [lang]);
+  const infiniteMonths = useMemo(() => Array.from({ length: 12 * MULTIPLIER }, (_, i) => baseMonths[i % 12]), [baseMonths]);
+  const infiniteDays = useMemo(() => Array.from({ length: maxDays * MULTIPLIER }, (_, i) => (i % maxDays) + 1), [maxDays]);
+
+  const parsedMin = useMemo(() => minDate ? new Date(minDate).getTime() : null, [minDate]);
+  const parsedMax = useMemo(() => maxDate ? new Date(maxDate).getTime() : null, [maxDate]);
+
+  const isDateAllowed = useCallback((y: number, m: number, d: number) => {
+    const time = new Date(y, m, d).getTime();
+    if (parsedMin && time < parsedMin) return false;
+    if (parsedMax && time > parsedMax) return false;
     return true;
-  };
+  }, [parsedMin, parsedMax]);
 
-  // Check if any day exists in a month
-  const isMonthAllowed = (y: number, m: number) => {
-    const days = daysInMonth(y, m);
-    for (let d = 1; d <= days; d++) {
-      if (isDateAllowed(y, m, d)) return true;
-    }
-    return false;
-  };
+  const formatDate = useCallback(() => {
+    const m = String(realMonth + 1).padStart(2, "0");
+    const d = String(realDay).padStart(2, "0");
 
-  // Check if any month exists in a year
-  const isYearAllowed = (y: number) => {
-    for (let m = 0; m < 12; m++) {
-      if (isMonthAllowed(y, m)) return true;
-    }
-    return false;
-  };
-
-  const formatDate = () => {
     switch (dateFormat) {
-      case "DD/MM/YYYY":
-        return `${day}${dashOrSlashBetweenTheDate}${month + 1}${dashOrSlashBetweenTheDate}${year}`;
-      case "MM-DD-YYYY":
-        return `${month + 1}${dashOrSlashBetweenTheDate}${day}${dashOrSlashBetweenTheDate}${year}`;
-      default:
-        return `${year}${dashOrSlashBetweenTheDate}${month + 1}${dashOrSlashBetweenTheDate}${day}`;
+      case "DD/MM/YYYY": return `${d}${dashOrSlashBetweenTheDate}${m}${dashOrSlashBetweenTheDate}${year}`;
+      case "MM-DD-YYYY": return `${m}${dashOrSlashBetweenTheDate}${d}${dashOrSlashBetweenTheDate}${year}`;
+      default: return `${year}${dashOrSlashBetweenTheDate}${m}${dashOrSlashBetweenTheDate}${d}`;
     }
-  };
+  }, [realMonth, realDay, year, dateFormat, dashOrSlashBetweenTheDate]);
 
   const handleSave = () => {
-    const d = new Date(year, month, day);
-    if (isDateAllowed(year, month, day)) {
-      onChange?.(d);
+    if (isDateAllowed(year, realMonth, realDay)) {
+      onChange?.(new Date(year, realMonth, realDay), formatDate());
       onClose?.();
     }
   };
@@ -115,86 +114,91 @@ const MobileDatePicker: FC<Props> = ({
     onClose?.();
     const today = new Date();
     setYear(today.getFullYear());
-    setMonth(today.getMonth());
-    setDay(today.getDate());
+    setMonthIndex(12 * (MULTIPLIER / 2) + today.getMonth());
+    setDayIndex(new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() * (MULTIPLIER / 2) + today.getDate() - 1);
+  };
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>, setIndexFunc: React.Dispatch<React.SetStateAction<number>>, isYear = false) => {
+    const target = e.target as HTMLDivElement;
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+
+    scrollTimeout.current = setTimeout(() => {
+      const index = Math.round(target.scrollTop / 40);
+      setIndexFunc(isYear ? (years[index] || years[0]) : prev => prev !== index ? index : prev);
+    }, 150);
+  }, [years]);
+
+  const scrollToSelected = (ref: React.RefObject<HTMLDivElement | null>, selectedIndex: number) => {
+    if (ref.current) ref.current.scrollTo({ top: selectedIndex * 40, behavior: "smooth" });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, type: "year" | "month" | "day") => {
+    if (e.key === "Enter") return handleSave();
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+
+    e.preventDefault();
+    const dir = e.key === "ArrowDown" ? 1 : -1;
+
+    if (type === "year") {
+      const nextYear = years[years.indexOf(year) + dir];
+      if (nextYear) setYear(nextYear);
+    } else if (type === "month") {
+      setMonthIndex(prev => prev + dir);
+    } else if (type === "day") {
+      setDayIndex(prev => prev + dir);
+    }
   };
 
   useEffect(() => {
-    scrollToSelected(yearRef, years.indexOf(year));
-  }, [year]);
+    const prev = prevProps.current;
+    if (prev.year !== year || prev.month !== realMonth) {
+      const targetDay = Math.min(prev.day, maxDays);
+      setDayIndex(maxDays * (MULTIPLIER / 2) + targetDay - 1);
+      prevProps.current = { year, month: realMonth, day: targetDay };
+    } else if (prev.day !== realDay) {
+      prevProps.current = { year, month: realMonth, day: realDay };
+    }
+  }, [year, realMonth, realDay, maxDays]);
 
-  useEffect(() => {
-    scrollToSelected(monthRef, month);
-  }, [month]);
-
-  useEffect(() => {
-    scrollToSelected(dayRef, day - 1);
-  }, [day]);
+  useEffect(() => scrollToSelected(yearRef, years.indexOf(year)), [year, years]);
+  useEffect(() => scrollToSelected(monthRef, monthIndex), [monthIndex]);
+  useEffect(() => scrollToSelected(dayRef, dayIndex), [dayIndex]);
 
   return (
-    <MobileDatePickerContainer id="mobileDatePicker" className={className}>
-      {isAppearTheDataInTheHeader && (
-        <div className="header">{formatDate()}</div>
-      )}
+      <MobileDatePickerContainer id="mobileDatePicker" className={className}>
+        {isAppearTheDataInTheHeader && <div className="header">{formatDate()}</div>}
 
-      <div className="picker">
-        <div className="column" ref={yearRef}>
-          {years.map((y) => {
-            const allowed = isYearAllowed(y);
-            return (
-              <div
-                key={y}
-                className={`item ${y === year ? "selected" : ""} ${!allowed ? "disabled" : ""}`}
-                onClick={() => allowed && setYear(y)}
-              >
-                {y}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="column" ref={monthRef}>
-          {months.map((m, idx) => {
-            const allowed = isMonthAllowed(year, idx);
-            return (
-              <div
-                key={m}
-                className={`item ${idx === month ? "selected" : ""} ${!allowed ? "disabled" : ""}`}
-                onClick={() => allowed && setMonth(idx)}
-              >
-                {m}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="column" ref={dayRef}>
-          {dayList.map((d) => {
-            const allowed = isDateAllowed(year, month, d);
-            return (
-              <div
-                key={d}
-                className={`item ${d === day ? "selected" : ""} ${!allowed ? "disabled" : ""}`}
-                onClick={() => allowed && setDay(d)}
-              >
-                {d}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="footer">
-        {isAppearClearButton && (
-          <div className="btn clearBtn" onClick={handleClear}>
-            {lang === "en" ? "Clear" : lang === "ku" ? "پاک کردن" : "حذف"}
+        <div className="picker">
+          <div className="column" ref={yearRef} tabIndex={0} onScroll={(e) => handleScroll(e, setYear, true)} onKeyDown={(e) => handleKeyDown(e, "year")}>
+            {years.map((y) => (
+                <PickerItem key={`year-${y}`} label={y} index={y} isSelected={y === year} isDisabled={false} onSelect={setYear} />
+            ))}
           </div>
-        )}
-        <div className="btn saveBtn" onClick={handleSave}>
-          {lang === "en" ? "Save" : lang === "ku" ? "ذخیره" : "حفظ"}
+
+          <div className="column" ref={monthRef} tabIndex={0} onScroll={(e) => handleScroll(e, setMonthIndex)} onKeyDown={(e) => handleKeyDown(e, "month")}>
+            {infiniteMonths.map((m, idx) => (
+                <PickerItem key={`month-${idx}`} label={m} index={idx} isSelected={idx === monthIndex} isDisabled={false} onSelect={setMonthIndex} />
+            ))}
+          </div>
+
+          <div className="column" ref={dayRef} tabIndex={0} onScroll={(e) => handleScroll(e, setDayIndex)} onKeyDown={(e) => handleKeyDown(e, "day")}>
+            {infiniteDays.map((d, idx) => (
+                <PickerItem key={`day-${idx}`} label={d} index={idx} isSelected={idx === dayIndex} isDisabled={!isDateAllowed(year, realMonth, d)} onSelect={setDayIndex} />
+            ))}
+          </div>
         </div>
-      </div>
-    </MobileDatePickerContainer>
+
+        <div className="footer">
+          {isAppearClearButton && (
+              <div className="btn clearBtn" onClick={handleClear}>
+                {lang === "en" ? "Clear" : lang === "ku" ? "پاک کردن" : "حذف"}
+              </div>
+          )}
+          <div className="btn saveBtn" onClick={handleSave}>
+            {lang === "en" ? "Save" : lang === "ku" ? "ذخیره" : "حفظ"}
+          </div>
+        </div>
+      </MobileDatePickerContainer>
   );
 };
 

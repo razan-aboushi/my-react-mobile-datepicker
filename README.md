@@ -5,7 +5,7 @@ A high-performance, **infinite-scrolling** mobile date picker for React and Type
 ![Mobile Date Picker](https://github.com/razan-aboushi/my-react-mobile-datepicker/blob/main/myDatePicker.png?raw=true)
 
 ![Mobile Date Picker](https://github.com/razan-aboushi/my-react-mobile-datepicker/blob/main/datePickerImg.png?raw=true)
-<<<<<<< HEAD
+
 ---
 
 ## 🚀 Features
@@ -29,11 +29,8 @@ npm install my-react-mobile-datepicker
 
 ---
 
-## Usage (TypeScript)
-
 The picker provides a dual-argument `onChange` callback, returning both a standard JS `Date` object and a pre-formatted string based on your settings.
 
-```tsx
 import React, { useState } from "react";
 import { MobileDatePicker } from "my-react-mobile-datepicker";
 
@@ -53,7 +50,6 @@ const App = () => {
         value={selectedDate}
         minYear={1970}
         maxYear={2030}
-<<<<<<< HEAD
         lang="en"
         minDate={new Date(2000, 0, 1)}
         maxDate={new Date(2025, 11, 31)}
@@ -75,7 +71,6 @@ export default App;
 
 ## Props
 
-<<<<<<< HEAD
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `value` | `Date | string | null` | `new Date()` | Initial date. Supports Date objects or ISO strings. |
@@ -89,7 +84,6 @@ export default App;
 | `onChange` | `function` | `undefined` | Fired on save. Returns `(dateObj, formattedStr)`. |
 | `isAppearClearButton` | `boolean` | `true` | Toggle the "Clear" action button. |
 | `isAppear...Header` | `boolean` | `true` | Toggle the live date preview at the top. |
-=======
 | Prop                        | Type                                           | Default                    | Description                                                           |
 | --------------------------- | ---------------------------------------------- | -------------------------- | --------------------------------------------------------------------- |
 | `value`                     | `Date`                                         | `new Date()`               | Initial selected date                                                 |
@@ -104,7 +98,6 @@ export default App;
 | `onClose`                   | `() => void`                                   | `undefined`                | Callback fired when the picker closes                                 |
 | `className`                 | `string`                                       | `undefined`                | Add a custom CSS class for styling                                    |
 | `appearTheDataInTheHeader`  | `boolean`                                      | `true`                     | If `true`, displays the formatted date in the header above the picker |
->>>>>>> bc38bd4f46066fa216b6fa06f946c5f0f6e21d1d
 
 ---
 
@@ -120,11 +113,7 @@ This picker is built for everyone. When a column is focused via keyboard:
 
 ## 🎨 Styling & Customization
 
-<<<<<<< HEAD
 Target the following classes to override the default look:
-=======
-Supported months for the `lang` prop:
->>>>>>> bc38bd4f46066fa216b6fa06f946c5f0f6e21d1d
 
 * `.item.selected`: The currently centered item in the blue border.
 * `.item.disabled`: Dates restricted by `minDate` or `maxDate`.
@@ -143,9 +132,4 @@ Supported months for the `lang` prop:
 
 ## License
 
-<<<<<<< HEAD
 MIT © [Razan Aboushi](https://github.com/razan-aboushi)
-=======
-MIT © [Razan Aboushi](https://github.com/razan-aboushi)
-
->>>>>>> bc38bd4f46066fa216b6fa06f946c5f0f6e21d1d

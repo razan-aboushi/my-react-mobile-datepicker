@@ -1,0 +1,57 @@
+name: Version and Release
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to main branch
+
+jobs:
+  version-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ "$(git log --oneline -1)" != "$(git log --oneline origin/main -1)" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Version bump and publish
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          # Install dependencies
+          npm ci
+          
+          # Build package
+          npm run build
+          
+          # Version bump (patch) and create tag
+          npm version patch -m "chore(release): %s"
+          
+          # Push changes and tag
+          git push origin main --follow-tags
+          
+          # Publish to npm
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
